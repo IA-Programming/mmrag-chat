@@ -23,7 +23,7 @@ from core.index.store import Hit, IndexHandle
 from core.llm.backends import Backend, LocalBackend
 from core.obs.log import Logger
 from core.rag.history import HistoryConfig, retrieval_query, rewrite_messages, select_history
-from core.rag.prompt_builder import BuiltPrompt, build_prompt
+from core.rag.prompt_builder import REFUSAL, BuiltPrompt, build_prompt
 from core.rag.sampling import Effective, request_fields
 from core.runtime.governor import ALWAYS_RESIDENT, MM_EMBEDDER, Governor
 from core.runtime.router import RouterClient
@@ -31,6 +31,18 @@ from core.runtime.telemetry import PeakSampler, Telemetry
 from core.schemas import Capabilities, EmbedParams, ModelPreset
 
 BARE_CITATION = re.compile(r"^\s*(\[S\d+\][\s.,;]*)+$")
+CITATION = re.compile(r"\[S\d+\]")
+
+
+def strip_contradicting_refusal(answer: str) -> str:
+    """Small models sometimes append the refusal sentence after a real, cited answer
+    ("... 23 stations [S1]. That is not in the indexed data."). Keep the answer, drop the refusal."""
+    if REFUSAL not in answer:
+        return answer
+    rest = answer.replace(REFUSAL, " ").strip(" .\n")
+    if len(rest) > 20 and CITATION.search(rest):
+        return re.sub(r"\s{2,}", " ", rest).strip() + ("" if rest.rstrip().endswith(".") else ".")
+    return answer
 
 
 @dataclass
@@ -157,7 +169,9 @@ class Turn:
 
                     # ---- contextualization
                     rq = retrieval_query(query, req.history, req.history_cfg)
-                    if req.history_cfg.contextualize == "llm_rewrite" and req.history and query:
+                    # An attachment defines the question: rewriting it from history (browser pass) dragged in the previous topic.
+                    rewrite = req.history_cfg.contextualize == "llm_rewrite" and req.history_cfg.policy != "none" and req.attachment is None
+                    if rewrite and req.history and query:
                         self._status("rewriting the question")
                         if req.backend_name == "local" and req.preset:
                             gov.ensure(req.preset.id, sid=sid, progress=self._status)
@@ -186,7 +200,7 @@ class Turn:
                     n_ctx = req.preset.n_ctx if req.preset else 32768
                     max_tokens = int(req.effective.values["max_tokens"])
                     hist = select_history(req.history, req.history_cfg)
-                    if req.attachment is not None and not query and not getattr(caps, req.attachment.modality, False):
+                    if req.attachment is not None and not getattr(caps, req.attachment.modality, False):
                         hist = []  # a voice/image-only question the model cannot perceive must not be answered from history
                         self.notes.append(
                             f"This model cannot {'listen to audio' if req.attachment.modality == 'audio' else 'see images'}; the answer is based on the sources closest to your attachment."
@@ -273,6 +287,7 @@ class Turn:
             stats.setdefault("peak_mb", round(p.telemetry.peak_mb(), 1))
             self.stats = stats
             self.finished = True
+        self.answer = strip_contradicting_refusal(self.answer)
         if self.answer and BARE_CITATION.match(self.answer):
             self.notes.append("The model only cited a source; open Sources to read it, or ask again with more detail.")
         if not self.answer and self.error is None and self.reasoning:
@@ -356,7 +371,7 @@ class ChatPipeline:
             return self.media_parts(att, self.params), 300
         if att.modality == "audio" and caps.audio:
             return self.media_parts(att, self.params), int(self.params.audio.window_s * 25)
-        if att.modality == "audio" and not req.query.strip():
+        if att.modality == "audio":
             # UX finding (browser pass): without this the model answered the previous turn's topic.
             return [
                 {

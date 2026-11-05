@@ -106,7 +106,9 @@
       "shipped": true,
       "extra_args": {
         "load-mode": "none",
-        "no-warmup": true
+        "no-warmup": true,
+        "image-min-tokens": 64,
+        "image-max-tokens": 128
       },
       "source": {
         "repo": "LiquidAI/LFM3-VL-2B-GGUF",
@@ -114,7 +116,7 @@
         "model": "LFM3-VL-2B-QAD-Q4_0.gguf",
         "mmproj": "mmproj-LFM3-VL-2B-Q8_0.gguf"
       },
-      "notes": "Shipped default (S12): answer accuracy 0.684, refusal 1.0, chat 1,971 MB (73 %) / image turn with swap 2,058 MB (76 %) of 2,700; TTFT p95 28.8 s (text-only questions 13-15 s), decode 11.3 tok/s on 2 pinned cores. load-mode none (EXP-LOAD-MODE-01).",
+      "notes": "Shipped default (S12): answer accuracy 0.684, refusal 1.0, chat 1,971 MB (73 %) / image turn with swap 2,058 MB (76 %) of 2,700; TTFT p95 28.8 s (text-only questions 13-15 s), decode 11.3 tok/s on 2 pinned cores. load-mode none (EXP-LOAD-MODE-01). image-max-tokens 128 (EXP-VIS-01: cross-modal TTFT p95 30.5 -> 17.6 s, 1 of 23 answers lost; 64 gives 14.8 s).",
       "measured_peak_mb": 1450,
       "gates": {
         "G0": "pass",

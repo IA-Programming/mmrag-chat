@@ -18,7 +18,7 @@ REWRITE_PROMPT = (
 class HistoryConfig:
     policy: str = "window"
     window: int = 4
-    contextualize: str = "off"
+    contextualize: str = "llm_rewrite"  # EXP-HIST-01
 
 
 def select_history(turns: list[dict[str, Any]], cfg: HistoryConfig) -> list[dict[str, Any]]:

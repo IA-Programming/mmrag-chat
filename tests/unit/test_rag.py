@@ -161,3 +161,11 @@ def test_chat_export_schema_and_redaction() -> None:
     md = to_markdown(exp)
     assert key not in js and key not in md and "thumbs" not in js
     assert exp.effective_params == {"temperature": 0.1}
+
+
+def test_contradicting_refusal_is_stripped() -> None:
+    from core.rag.pipeline import strip_contradicting_refusal
+
+    assert strip_contradicting_refusal("The railway has 23 stations [S1]. That is not in the indexed data.") == "The railway has 23 stations [S1]."
+    assert strip_contradicting_refusal("That is not in the indexed data.") == "That is not in the indexed data."
+    assert strip_contradicting_refusal("Maybe. That is not in the indexed data.") == "Maybe. That is not in the indexed data."  # no citation: keep

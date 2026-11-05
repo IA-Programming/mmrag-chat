@@ -18,7 +18,7 @@ DEFAULTS: dict[str, Any] = {
     "settings.gen_mode": dict,
     "settings.history_policy": lambda: "window",
     "settings.history_window": lambda: 4,
-    "settings.contextualize": lambda: "off",
+    "settings.contextualize": lambda: "llm_rewrite",  # EXP-HIST-01: follow-up retrieval 0.57 -> 1.0, +2.7 s
     "settings.retrieval": lambda: {"k": 4, "threshold": 0.0, "quota": {}},
     "settings.fallback": lambda: {"enabled": False, "api_key": None, "model": None, "consent": False, "media_ok": False},
     "index.handle": lambda: None,

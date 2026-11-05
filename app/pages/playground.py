@@ -75,7 +75,7 @@ def _matryoshka() -> None:
                 st.caption(f"rank correlation {r['spearman']:.2f}")
             for rank, (iid, sc) in enumerate(zip(r["ids"], r["scores"], strict=True), start=1):
                 hit = h.item(int(iid))
-                label = f"{hit.modality}: {hit.filename}" if hit else str(iid)
+                label = f"{hit.modality}: {hit.filename} #{hit.chunk_idx}" if hit else str(iid)
                 st.caption(f"{rank}. {label[:48]} ({sc:.3f})")
     st.markdown("**Storage per vector** (real TurboVec index files, fixed overhead removed)")
     st.dataframe(_bytes_table(tuple(sorted(res, reverse=True))), hide_index=True, width="stretch")

@@ -99,3 +99,6 @@ TurboVec `TurboQuantIndex` (2 or 4 bits/coordinate; ~196 / 388 bytes per 768-d v
 | ADR-014 | `load-mode none` for every preset (EXP-LOAD-MODE-01). |
 | ADR-015 | Synthetic speech via espeak-ng (offline, deterministic; GPL tool, CC0 output). |
 | ADR-016 | Gemini default `gemini-3.5-flash-lite` (EXP-GEMINI-01). |
+| ADR-017 | Text chunks of 128 tokens without overlap (EXP-EMB-01); generator images capped at 128 tokens (EXP-VIS-01); prefill (~50 tok/s on 2 cores) drives both. |
+| ADR-018 | Shipped generator LFM3-VL-2B QAD Q4_0 (S12, docs/EVALUATION.md). |
+| ADR-019 | History `window(4)` + `llm_rewrite` contextualization by default (EXP-HIST-01); skipped when the policy is `none`. |

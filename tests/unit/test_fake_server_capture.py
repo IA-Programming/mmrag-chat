@@ -76,3 +76,46 @@ def test_embedding_request_reflects_knobs(fake, tmp_path: Path) -> None:  # type
     q = emb.query_text("where?")
     emb.embed_query("where?", model="emb-mm")
     assert bodies(cap, "/v1/embeddings")[-1]["input"] == [q] and q.startswith("task: search result | query:")
+
+
+def test_attachment_turn_skips_rewrite_and_history(fake, tmp_path: Path) -> None:  # type: ignore[no-untyped-def]
+    """Browser-pass regression: a voice question must not be rewritten from (or answered with) history."""
+    import io
+    import wave
+
+    from core.index.store import IndexHandle
+    from core.obs.log import Logger, LogRing
+    from core.rag.history import HistoryConfig
+    from core.rag.pipeline import Attachment, ChatPipeline, RetrievalConfig, TurnRequest
+    from core.runtime.governor import Governor
+    from core.runtime.telemetry import Telemetry
+
+    c, cap = fake
+    presets = load_model_presets()
+    gov = Governor(c, presets, lambda: 100.0, hard_budget_mb=2565, logger=Logger(LogRing(), stdout=False))
+    params = load_embed_params()
+    emb = EmbedService(c, params)
+    h = IndexHandle(tmp_path / "ix")
+    with gov.turn("t", "x"), gov.using("emb-text"):
+        v = emb.embed_pieces(["title: none | text: Quellmar employs 1551 people."], "emb-text")
+    h.add_source("s", "q.md", "text", "a" * 64, 1)
+    h.add_items("s", [{"modality": "text", "chunk_idx": 0, "span": {}, "text": "Quellmar employs 1551 people.", "tokens_est": 8}], v, "p")
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(16000)
+        w.writeframes(b"\x01\x00" * 16000)
+    preset = presets.get("lfm3-vl-2b-qad-q4_0")
+    eff = resolve(load_sampling_presets(), "lfm3-vl-2b", overrides={"max_tokens": 32})
+    history = [{"role": "user", "text": "When was the mirror installed?"}, {"role": "assistant", "text": "In 2015 [S1]."}]
+    req = TurnRequest(sid="t", query="Please answer the question in this recording.", history=history, preset=preset, effective=eff,
+                      history_cfg=HistoryConfig("window", 4, "llm_rewrite"), retrieval=RetrievalConfig(k=2),
+                      attachment=Attachment("audio", buf.getvalue(), "audio/wav", "q.wav"))  # fmt: skip
+    t = ChatPipeline(c, gov, emb, params, Telemetry(2700, source=lambda: 100.0), Logger(LogRing(), stdout=False)).turn(req, h)
+    "".join(t.stream())
+    assert t.error is None
+    assert "rewritten_query" not in t.stats and t.stats["extra_generation_calls"] == 0
+    assert t.stats["prompt_breakdown"]["history"] == 0
+    assert len(bodies(cap, "/v1/chat/completions")) == 1
+    assert any("cannot listen" in n for n in t.notes)

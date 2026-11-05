@@ -49,9 +49,9 @@ def main() -> int:
         finally:
             rig.stop()
         tt = sorted(x["ttft_ms"] for x in rows if x["ttft_ms"])
-        out[cap or "default"] = {"n": len(rows), "accuracy": round(sum(x["correct"] for x in rows) / len(rows), 3), "ttft_median_s": round(statistics.median(tt) / 1000, 1),
+        out[str(cap or "default")] = {"n": len(rows), "accuracy": round(sum(x["correct"] for x in rows) / len(rows), 3), "ttft_median_s": round(statistics.median(tt) / 1000, 1),
                                  "ttft_p95_s": round(tt[int(0.95 * (len(tt) - 1))] / 1000, 1), "prompt_tokens_median": statistics.median(x["prompt_tokens"] or 0 for x in rows)}  # fmt: skip
-        print(cap, out[cap or "default"], flush=True)
+        print(cap, out[str(cap or "default")], flush=True)
     append("EXP-VIS-01", candidate_id=args.candidate, params={"queries": "cross_modal"}, metrics=out, verdict="see metrics")
     Path("experiments/_raw/vision_tokens.json").write_text(json.dumps(out, indent=2))
     return 0

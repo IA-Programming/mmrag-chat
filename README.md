@@ -15,15 +15,16 @@ Your contributions go a long way in fueling our passion for creating intelligent
 ---
 
 <!-- RESULTS:START -->
-## What it shows (measured in the 2.7 GB / 2-core emulator)
+## What it shows (measured in a 2.7 GB / 2-core emulator of the free tier)
 
 | | |
 |---|---|
-| Runtime | llama.cpp `b12119`, built on Debian 11 (glibc ≤ 2.30, no libstdc++ dependency), runtime-selected CPU kernels |
-| Embedder | EmbeddingGemma-2 UD-Q4_K_XL + Q8_0 projector: text **353 MB**, multimodal **≈ 980 MB** resident |
-| Generator | LFM3-VL-2B (QAD Q4_0) + Q8_0 projector: **≈ 1.4 GB** resident, ~40 tok/s prefill, ~12 tok/s decode on 2 cores |
-| Whole app, chatting | **≈ 2.0 GB (75 % of the cap)**; image questions swap the generator out for the multimodal embedder and back (~4.6 s) |
-| Cold start | warm-up screen in 1.2 s, ready in ~10 s with a warm cache (first visit after sleep re-downloads the ~2 GB bundle) |
+| Runtime | llama.cpp `b12119` built on Debian 11 (glibc ≤ 2.30, no libstdc++ dependency, CPU kernels picked at run time) |
+| Embedder | EmbeddingGemma-2 (Q4 + Q8_0 projector): one 768-d space for text, images, audio and video frames |
+| Generator | LFM3-VL-2B (quantization-aware Q4_0 + Q8_0 projector), chosen from 14 candidate configurations by gated evaluation ([docs/EVALUATION.md](docs/EVALUATION.md)) |
+| Memory | whole app chatting **≈ 2.0 GB (73 % of the cap)**, image question with model swap **2.06 GB (76 %)** |
+| Quality (synthetic set) | 68 % of answerable questions answered correctly, 100 % of unanswerable ones refused, right source retrieved 90 % |
+| Speed on 2 cores | first token in 13–15 s for text questions, ~15 s for image questions, then ~11 tokens/s; sample data (28 files, 4 modalities) indexes in < 3 min |
 <!-- RESULTS:END -->
 
 ## Deploy your own copy (one click)

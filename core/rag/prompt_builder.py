@@ -27,7 +27,7 @@ SYSTEM_PROMPT = (
 )
 NO_SOURCES_NOTE = "(No relevant sources were retrieved.)"
 REFUSAL = "That is not in the indexed data."
-IMAGE_TOKENS = 300  # conservative per-image cost for the generator (dynamic-resolution cap)
+IMAGE_TOKENS = 160  # per-image budget: generator presets cap images at 128 tokens (EXP-VIS-01) + header margin
 HISTORY_SHARE = 0.35
 MIN_TEXT_TOKENS = 48
 
