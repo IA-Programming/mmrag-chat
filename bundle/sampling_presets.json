@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "family_fallback": {
+    "lfm3": {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.1}
+  },
+  "presets": {
+    "lfm3-vl-2b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-VL-2B-GGUF",
+      "revision": "1add221a5ea6c047fcf1eaaf2d247939d7cf8849",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {"default": {"temperature": 0.1, "top_p": 1.0, "top_k": 50, "min_p": 0.0, "repeat_penalty": 1.1}},
+      "reasoning": {"on_by_default": false, "control": "chat_template_kwargs"},
+      "notes": "Card + GGUF metadata (general.sampling.temp=0.1, top_k=50, penalty_repeat=1.1). Model thinks by default; the app defaults thinking OFF for latency (EXP-THINK-01)."
+    },
+    "lfm3-1.7b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-1.7B-GGUF",
+      "revision": "cd0c74c575b5c416f3011b5b4c298077f26ca8c2",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.1},
+        "math_stem": {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "repeat_penalty": 1.0}
+      },
+      "reasoning": {"on_by_default": false, "control": "chat_template_kwargs"}
+    },
+    "qwen3.5-0.8b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/Qwen/Qwen3.5-0.8B",
+      "revision": "",
+      "checked_at": "2026-11-04",
+      "default_mode": "text_nonthinking",
+      "modes": {
+        "text_nonthinking": {"temperature": 1.0, "top_p": 1.0, "top_k": 20, "min_p": 0.0, "presence_penalty": 2.0, "repeat_penalty": 1.0},
+        "vision_nonthinking": {"temperature": 0.7, "top_p": 0.8, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5, "repeat_penalty": 1.0},
+        "thinking": {"temperature": 1.0, "top_p": 0.95, "top_k": 20, "min_p": 0.0, "presence_penalty": 1.5}
+      },
+      "reasoning": {"on_by_default": false, "control": "chat_template_kwargs"}
+    },
+    "minicpm-v-4.7-1b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/openbmb/MiniCPM-V-4.7-1B",
+      "revision": "",
+      "checked_at": "2026-11-04",
+      "default_mode": "instruct",
+      "modes": {"instruct": {"temperature": 0.7, "top_p": 0.95, "top_k": 100, "min_p": 0.0, "presence_penalty": 0.0, "repeat_penalty": 1.03}},
+      "reasoning": {"on_by_default": true, "control": "chat_template_kwargs"}
+    },
+    "ministral-3-3b": {
+      "status": "partial",
+      "source_url": "https://huggingface.co/mistralai/Ministral-3-3B-Instruct-2512",
+      "revision": "",
+      "checked_at": "2026-11-04",
+      "default_mode": "default",
+      "modes": {"default": {"temperature": 0.1, "top_p": 1.0, "top_k": 0, "min_p": 0.0, "repeat_penalty": 1.0}},
+      "reasoning": {"on_by_default": false, "control": "none"},
+      "notes": "Card gives temperature only; other fields neutral."
+    },
+    "lfm3-omni-2b": {
+      "status": "to_verify",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-Omni-2B-GGUF",
+      "revision": "d508b88f08a5b4286f2d2805a6a8d69a0ff44c72",
+      "checked_at": "2026-11-04",
+      "default_mode": "default",
+      "modes": {"default": {"temperature": 0.1, "top_k": 50, "repeat_penalty": 1.1}},
+      "reasoning": {"on_by_default": false, "control": "none"}
+    }
+  }
+}

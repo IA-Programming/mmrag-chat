@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "presets": [
+    {
+      "id": "emb-text",
+      "label": "EmbeddingGemma-2 (text)",
+      "role": "embedder",
+      "family": "embeddinggemma",
+      "files": {
+        "model": "embeddinggemma-2-UD-Q4_K_XL.gguf"
+      },
+      "n_ctx": 2048,
+      "kv": {
+        "k": "f16",
+        "v": "f16"
+      },
+      "flash_attn": "auto",
+      "threads": 2,
+      "batch": 2048,
+      "ubatch": 2048,
+      "capabilities": {
+        "image": false,
+        "audio": false,
+        "video": false,
+        "reasoning_control": "none"
+      },
+      "est_peak_mb": 450,
+      "shipped": true,
+      "extra_args": {
+        "load-mode": "none",
+        "no-warmup": true
+      },
+      "source": {
+        "repo": "unsloth/embeddinggemma-2-GGUF",
+        "revision": "031f0d4b35536f69ab3509d4893c923264fcf253",
+        "model": "embeddinggemma-2-UD-Q4_K_XL.gguf"
+      },
+      "notes": "Always resident. Text queries never load the multimodal projector (FR-021 AC1)."
+    },
+    {
+      "id": "emb-mm",
+      "label": "EmbeddingGemma-2 (multimodal)",
+      "role": "embedder",
+      "family": "embeddinggemma",
+      "files": {
+        "model": "embeddinggemma-2-UD-Q4_K_XL.gguf",
+        "mmproj": "embeddinggemma-2-mmproj-Q8_0.gguf"
+      },
+      "n_ctx": 2048,
+      "kv": {
+        "k": "f16",
+        "v": "f16"
+      },
+      "flash_attn": "auto",
+      "threads": 2,
+      "batch": 2048,
+      "ubatch": 2048,
+      "capabilities": {
+        "image": true,
+        "audio": true,
+        "video": "frames",
+        "reasoning_control": "none"
+      },
+      "est_peak_mb": 1100,
+      "shipped": true,
+      "extra_args": {
+        "load-mode": "none",
+        "no-warmup": true
+      },
+      "source": {
+        "repo": "unsloth/embeddinggemma-2-GGUF",
+        "revision": "031f0d4b35536f69ab3509d4893c923264fcf253",
+        "model": "embeddinggemma-2-UD-Q4_K_XL.gguf",
+        "mmproj": "mmproj-Q8_0.gguf"
+      },
+      "notes": "Loaded on demand for indexing and media queries; never co-resident with a generator."
+    },
+    {
+      "id": "lfm3-vl-2b-qad-q4_0",
+      "label": "LFM3-VL-2B (QAD Q4_0)",
+      "role": "generator",
+      "family": "lfm3",
+      "files": {
+        "model": "LFM3-VL-2B-QAD-Q4_0.gguf",
+        "mmproj": "LFM3-VL-2B-mmproj-Q8_0.gguf"
+      },
+      "n_ctx": 8192,
+      "kv": {
+        "k": "q8_0",
+        "v": "q8_0"
+      },
+      "flash_attn": "auto",
+      "threads": 2,
+      "batch": 512,
+      "ubatch": 256,
+      "capabilities": {
+        "image": true,
+        "audio": false,
+        "video": "frames",
+        "reasoning_control": "chat_template_kwargs"
+      },
+      "sampling_preset": "lfm3-vl-2b",
+      "est_peak_mb": 1400,
+      "shipped": false,
+      "extra_args": {
+        "load-mode": "none",
+        "no-warmup": true
+      },
+      "source": {
+        "repo": "LiquidAI/LFM3-VL-2B-GGUF",
+        "revision": "1add221a5ea6c047fcf1eaaf2d247939d7cf8849",
+        "model": "LFM3-VL-2B-QAD-Q4_0.gguf",
+        "mmproj": "mmproj-LFM3-VL-2B-Q8_0.gguf"
+      },
+      "notes": "load-mode none: 1.34 GB RSS vs 2.1 GB with mmap+repack (weights double-resident), same speed."
+    }
+  ]
+}
