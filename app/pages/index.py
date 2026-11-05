@@ -232,9 +232,9 @@ def render() -> None:
             state.set("index.bits", int(bits or 4))
             state.set("index.keep_vectors", bool(keep))
         running = job_running()
-        b1, b2, b3 = st.columns(3)
-        b1.button(
+        st.button(
             "Start indexing",
+            width="stretch",
             key="w_index_start",
             type="primary",
             on_click=_on_start,
@@ -242,9 +242,11 @@ def render() -> None:
             disabled=running or not ok,
             icon=":material/play_arrow:",
         )
-        b2.button("Cancel", key="w_index_cancel", on_click=_on_cancel, disabled=not running, icon=":material/stop:")
+        b2, b3 = st.columns(2)
+        b2.button("Cancel", key="w_index_cancel", on_click=_on_cancel, disabled=not running, icon=":material/stop:", width="stretch")
         b3.button(
             "Load sample data",
+            width="stretch",
             key="w_index_sample",
             on_click=start_sample_job,
             disabled=running or not sample_available(),

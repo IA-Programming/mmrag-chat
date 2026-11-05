@@ -1,11 +1,49 @@
 {
   "schema": 1,
-  "text": {"chunk_tokens": 256, "overlap_tokens": 32},
-  "image": {"max_side_px": 768, "max_pixels": 40000000, "token_cap_min": null, "token_cap_max": null, "format": "jpeg"},
-  "audio": {"sample_rate_hz": 16000, "channels": 1, "window_s": 30.0, "overlap_s": 2.0, "max_total_s": 300.0},
-  "video": {"max_total_s": 60.0, "fps": 1.0, "max_frames": 16, "frame_max_side_px": 448},
-  "dims": {"index_dim": 768, "allowed": [768, 512, 256, 128]},
-  "index": {"bits": 4, "keep_float32": true},
-  "prefix": {"query": "task: search result | query: {query}", "document": "title: none | text: {content}"},
-  "server": {"ubatch": 2048, "ctx": 2048, "pooling": "default"}
+  "text": {
+    "chunk_tokens": 128,
+    "overlap_tokens": 0
+  },
+  "image": {
+    "max_side_px": 768,
+    "max_pixels": 40000000,
+    "token_cap_min": null,
+    "token_cap_max": null,
+    "format": "jpeg"
+  },
+  "audio": {
+    "sample_rate_hz": 16000,
+    "channels": 1,
+    "window_s": 30.0,
+    "overlap_s": 2.0,
+    "max_total_s": 300.0
+  },
+  "video": {
+    "max_total_s": 60.0,
+    "fps": 1.0,
+    "max_frames": 16,
+    "frame_max_side_px": 448
+  },
+  "dims": {
+    "index_dim": 768,
+    "allowed": [
+      768,
+      512,
+      256,
+      128
+    ]
+  },
+  "index": {
+    "bits": 4,
+    "keep_float32": true
+  },
+  "prefix": {
+    "query": "task: search result | query: {query}",
+    "document": "title: none | text: {content}"
+  },
+  "server": {
+    "ubatch": 2048,
+    "ctx": 2048,
+    "pooling": "default"
+  }
 }

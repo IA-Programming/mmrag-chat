@@ -209,7 +209,9 @@ def load_jsonl(p: Path) -> list[dict[str, Any]]:
 def index_dataset(rig: Rig, ds: Path, cache: Path, *, max_frames: int, include: set[str]) -> IndexHandle:
     params = load_embed_params()
     params.video.max_frames = max_frames
-    key = f"{json.loads((ds / 'manifest.json').read_text()).get('bytes_total', 0)}-{max_frames}-{'-'.join(sorted(include))}"
+    from core.embed.client import params_hash
+
+    key = f"{json.loads((ds / 'manifest.json').read_text()).get('bytes_total', 0)}-{max_frames}-{'-'.join(sorted(include))}-{params_hash(params)}"
     root = cache / f"index-{key}"
     if (root / "index.tv").exists():
         return IndexHandle.open(root)
@@ -305,7 +307,10 @@ def evaluate(rig: Rig, p: ModelPreset, index: IndexHandle, ds: Path, max_queries
         r.metrics["g0_error"] = f"{exc.user_message} | {exc.detail}"[:400]
         r.verdict = "rejected at G0"
         return r
-    # ---------------- G1: memory per phase
+    # ---------------- G1: memory per phase (the text embedder is always resident in the app)
+    with rig.governor.turn("eval", "G1"):
+        rig.governor.ensure(ALWAYS_RESIDENT)
+        rig.governor.release(ALWAYS_RESIDENT)
     steady = rig.meter.used_mb()
     r.metrics["steady_mb"] = round(steady, 1)
     queries = load_jsonl(ds / "queries" / "queries.jsonl")

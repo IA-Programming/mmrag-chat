@@ -35,7 +35,8 @@
         "revision": "031f0d4b35536f69ab3509d4893c923264fcf253",
         "model": "embeddinggemma-2-UD-Q4_K_XL.gguf"
       },
-      "notes": "Always resident. Text queries never load the multimodal projector (FR-021 AC1)."
+      "notes": "Always resident. Text queries never load the multimodal projector (FR-021 AC1).",
+      "measured_peak_mb": 305
     },
     {
       "id": "emb-mm",
@@ -73,7 +74,8 @@
         "model": "embeddinggemma-2-UD-Q4_K_XL.gguf",
         "mmproj": "mmproj-Q8_0.gguf"
       },
-      "notes": "Loaded on demand for indexing and media queries; never co-resident with a generator."
+      "notes": "Loaded on demand for indexing and media queries; never co-resident with a generator.",
+      "measured_peak_mb": 935
     },
     {
       "id": "lfm3-vl-2b-qad-q4_0",
@@ -101,7 +103,7 @@
       },
       "sampling_preset": "lfm3-vl-2b",
       "est_peak_mb": 1400,
-      "shipped": false,
+      "shipped": true,
       "extra_args": {
         "load-mode": "none",
         "no-warmup": true
@@ -112,7 +114,16 @@
         "model": "LFM3-VL-2B-QAD-Q4_0.gguf",
         "mmproj": "mmproj-LFM3-VL-2B-Q8_0.gguf"
       },
-      "notes": "load-mode none: 1.34 GB RSS vs 2.1 GB with mmap+repack (weights double-resident), same speed."
+      "notes": "Shipped default (S12): answer accuracy 0.684, refusal 1.0, chat 1,971 MB (73 %) / image turn with swap 2,058 MB (76 %) of 2,700; TTFT p95 28.8 s (text-only questions 13-15 s), decode 11.3 tok/s on 2 pinned cores. load-mode none (EXP-LOAD-MODE-01).",
+      "measured_peak_mb": 1450,
+      "gates": {
+        "G0": "pass",
+        "G1": "pass",
+        "G5q": "pass",
+        "G2": "soft-fail",
+        "G3": "pass",
+        "G4": "soft-fail"
+      }
     }
   ]
 }

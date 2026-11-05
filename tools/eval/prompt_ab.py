@@ -18,8 +18,10 @@ from core.rag import prompt_builder as pb
 from tools.eval.ledger import append
 from tools.eval.run import Rig, all_candidate_presets, correct, load_jsonl, refused, turn
 
+XLANG = " The question may be in a different language than the sources: still use the sources, and answer in the language of the question."
 VARIANTS: dict[str, dict[str, Any]] = {
     "current": {},
+    "cross_language": {"system": pb.SYSTEM_PROMPT + XLANG},
     "no_bracket_lead": {
         "system": pb.SYSTEM_PROMPT + " Never reply with only a citation: always state the answer itself in words first.",
     },
@@ -33,20 +35,27 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--candidate", default="lfm3-vl-2b-qad-q4_0")
     ap.add_argument("--n", type=int, default=8)
+    ap.add_argument("--types", nargs="*", default=None, help="query types to sample (default: cross_modal + single/near-dup)")
+    ap.add_argument("--variants", nargs="*", default=None)
     ap.add_argument("--workdir", type=Path, default=Path("experiments/_raw/eval"))
     args = ap.parse_args()
     ds = DATASETS_DIR / "synth_v1"
     preset = next(p for p in all_candidate_presets(False) if p.id == args.candidate)
     index = IndexHandle.open(next(args.workdir.glob("index-*")))
     qs = [q for q in load_jsonl(ds / "queries" / "queries.jsonl") if not q.get("attachment")]
-    pick = [q for q in qs if q["type"] == "cross_modal"][: args.n // 2] + [q for q in qs if q["type"] in ("single_modal", "near_duplicate")][
-        : args.n - args.n // 2
-    ]
+    if args.types:
+        pick = [q for q in qs if q["type"] in args.types][: args.n]
+    else:
+        pick = [q for q in qs if q["type"] == "cross_modal"][: args.n // 2] + [q for q in qs if q["type"] in ("single_modal", "near_duplicate")][
+            : args.n - args.n // 2
+        ]
     rig = Rig.start([preset], Path("/rt/llama-server"), args.workdir / "ab")
     orig_system, orig_build = pb.SYSTEM_PROMPT, pb.build_prompt
     results: dict[str, Any] = {}
     try:
         for name, v in VARIANTS.items():
+            if args.variants and name not in args.variants:
+                continue
             pb.SYSTEM_PROMPT = v.get("system", orig_system)
 
             def build(v: dict[str, Any] = v, **kw: Any) -> Any:
