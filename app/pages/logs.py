@@ -52,7 +52,8 @@ def render() -> None:
     state.set("logs.filter", {"level": lvl, "component": comp, "text": text})
     state.set("logs.paused", paused)
     _tail()
-    st.download_button(
+    c1, c2 = st.columns(2)
+    c1.download_button(
         "Download my events (.jsonl)",
         to_jsonl(_events(limit=None)),
         file_name="mmrag-session-events.jsonl",
@@ -61,3 +62,31 @@ def render() -> None:
         on_click="ignore",
         icon=":material/download:",
     )
+    if c2.button(
+        "Prepare field report",
+        key="w_logs_field_prepare",
+        icon=":material/bug_report:",
+        help="Config, versions, probe and this session's events. No media, no secrets.",
+    ):
+        st.session_state["w_logs_field_blob"] = _field_report()
+    blob = st.session_state.get("w_logs_field_blob")
+    if blob:
+        c2.download_button(
+            "Download field report (.zip)", blob, file_name="mmrag-field-report.zip", mime="application/zip", key="w_logs_field", on_click="ignore"
+        )
+
+
+def _field_report() -> bytes:
+    from core.obs.field_report import build_field_report
+
+    rt = services.get_runtime()
+    session = {
+        "generator_id": state.get("settings.generator_id"),
+        "gen_overrides": state.get("settings.gen_overrides"),
+        "history": [state.get("settings.history_policy"), state.get("settings.history_window"), state.get("settings.contextualize")],
+        "retrieval": state.get("settings.retrieval"),
+        "embed_params": services.embed_params().model_dump(by_alias=True),
+        "last_turn_stats": [m.get("stats") for m in state.get("chat.messages")[-6:] if m.get("role") == "assistant"],
+    }
+    return build_field_report(cfg=rt.cfg, logger=services.log(), sid=state.sid(), probe=rt.probe(), bundle_id=rt.bundle_id(),
+                              manifest_sha256=rt.bundle.manifest_sha if rt.bundle else None, session=session)  # fmt: skip

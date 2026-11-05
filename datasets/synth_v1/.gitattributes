@@ -1,0 +1,2 @@
+# Keep every byte exactly as generated (checksums.sha256 covers all files): never convert line endings.
+* -text
