@@ -16,14 +16,14 @@ ROOT = Path(__file__).resolve().parents[2]
 
 def test_defaults_without_secrets() -> None:
     cfg = load_config({}, env={})
-    assert cfg.memory_cap_mb == 2700 and cfg.ui_mode == "navigation" and not cfg.enable_gemini_fallback
+    assert cfg.memory_cap_mb == 2700 and not cfg.enable_gemini_fallback
     assert cfg.gemini.api_key is None and cfg.gemini.model == DEFAULT_GEMINI_MODEL
     assert cfg.budget_hard_mb == pytest.approx(2565) and cfg.budget_steady_mb == pytest.approx(2160)
 
 
 def test_secret_beats_env_and_invalid_values_fall_back() -> None:
-    cfg = load_config({"app": {"memory_cap_mb": "1500", "ui_mode": "bogus", "log_level": "loud"}}, env={"MMRAG_MEMORY_CAP_MB": "900"})
-    assert cfg.memory_cap_mb == 1500 and cfg.ui_mode == "navigation" and cfg.log_level == "INFO"
+    cfg = load_config({"app": {"memory_cap_mb": "1500", "log_level": "loud"}}, env={"MMRAG_MEMORY_CAP_MB": "900"})
+    assert cfg.memory_cap_mb == 1500 and cfg.log_level == "INFO"
     assert load_config({}, env={"MMRAG_MEMORY_CAP_MB": "900"}).memory_cap_mb == 900
     assert load_config({"app": {"memory_cap_mb": "x"}}, env={}).memory_cap_mb == 2700
 

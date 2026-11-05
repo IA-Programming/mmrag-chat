@@ -79,11 +79,15 @@ class GeminiBackend:
 
     name = "gemini"
 
-    def __init__(self, api_key: str, model: str, base_url: str, logger: Logger | None = None, timeout: float = 120.0) -> None:
+    def __init__(
+        self, api_key: str, model: str, base_url: str, logger: Logger | None = None, timeout: float = 120.0, transport: httpx.BaseTransport | None = None
+    ) -> None:
         self.model = model
         self.log = logger or get_logger()
         self.log.redactor.register(api_key)
-        self._http = net.client(base_url=base_url, timeout=httpx.Timeout(timeout, connect=10.0), headers={"Authorization": f"Bearer {api_key}"})
+        self._http = net.client(
+            base_url=base_url, timeout=httpx.Timeout(timeout, connect=10.0), headers={"Authorization": f"Bearer {api_key}"}, transport=transport
+        )
 
     def close(self) -> None:
         self._http.close()

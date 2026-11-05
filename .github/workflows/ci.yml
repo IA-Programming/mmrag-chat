@@ -1,0 +1,36 @@
+name: ci
+on:
+  push:
+    branches: ["main", "claude/**"]
+  pull_request:
+permissions:
+  contents: read
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: constraints.txt
+      - name: Install
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Lint
+        run: make lint
+      - name: Types
+        run: make type
+      - name: Unit tests (offline)
+        run: make test
+      - name: App flows (AppTest + fake llama-server)
+        run: make apptest
+      - name: Secret scan
+        run: make secretscan
+      - name: Dependency audit
+        run: make audit
+        continue-on-error: true

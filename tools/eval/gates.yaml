@@ -1,0 +1,20 @@
+# Gate thresholds for the candidate matrix (TEST_PLAN section 4). Change here + note it in the ledger.
+mem_cap_mb: 2700
+app_overhead_mb: 160        # measured Streamlit process (114 MB) + headroom for extra sessions; added to the eval process tree RSS
+G0:
+  ready_within_s: 120
+G1:
+  steady_max_pct: 80        # hard
+  peak_max_pct: 95          # hard
+G2:
+  ttft_p95_max_s: 15        # soft (dev CPU is faster than Cloud: rank only)
+  decode_tok_s_floor: 3     # soft
+G3:
+  accuracy_min_abs: 0.60    # soft
+  accuracy_max_gap_pts: 10  # soft, vs best candidate
+  refusal_min: 0.80         # soft
+G4:
+  coherent_min: 0.70        # soft, window(4)
+G5:
+  cycles: 20
+  rss_drift_max_pct: 5      # hard

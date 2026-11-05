@@ -10,4 +10,4 @@ from app import services, shell, state  # noqa: E402
 
 state.sid()  # initialise session keys before any widget
 _runtime = services.get_runtime()  # starts the bundle bootstrap once per process (non-blocking)
-shell.run(services.get_config().ui_mode)
+shell.run()

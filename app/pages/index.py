@@ -222,24 +222,15 @@ def render() -> None:
             )
         locked = h is not None and h.count() > 0
         c1, c2 = st.columns(2)
-        c1.radio(
-            "Index bits",
-            [2, 4],
-            index=[2, 4].index(int(state.get("index.bits"))),
-            horizontal=True,
-            key="w_index_bits",
-            disabled=locked,
-            on_change=lambda: state.set("index.bits", int(state.widget_value("w_index_bits"))),
+        bits = c1.radio(
+            "Index bits", [2, 4], index=[2, 4].index(int(state.get("index.bits"))), horizontal=True, key="w_index_bits", disabled=locked,
             help="Clear the index to change.",
-        )
-        c2.checkbox(
-            "Keep float32 vectors",
-            value=bool(state.get("index.keep_vectors")),
-            key="w_index_keep_vectors",
-            disabled=locked,
-            on_change=lambda: state.set("index.keep_vectors", bool(state.widget_value("w_index_keep_vectors"))),
-            help="Needed by the Playground and Explorer.",
-        )
+        )  # fmt: skip
+        keep = c2.checkbox("Keep float32 vectors", value=bool(state.get("index.keep_vectors")), key="w_index_keep_vectors", disabled=locked,
+                           help="Needed by the Playground and Explorer.")  # fmt: skip
+        if not locked:
+            state.set("index.bits", int(bits or 4))
+            state.set("index.keep_vectors", bool(keep))
         running = job_running()
         b1, b2, b3 = st.columns(3)
         b1.button(

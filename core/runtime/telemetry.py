@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 
 import psutil
@@ -55,13 +56,15 @@ class MemorySample:
 
 
 class Telemetry:
-    def __init__(self, cap_mb: int) -> None:
+    def __init__(self, cap_mb: int, source: Callable[[], float] | None = None) -> None:
+        """`source` overrides the measurement (MB); the dev eval uses router tree + app overhead."""
         self.cap_mb = cap_mb
+        self.source = source
         self._peak_mb = 0.0
         self._lock = threading.Lock()
 
     def sample(self) -> MemorySample:
-        tree = tree_rss_bytes() / 1e6
+        tree = self.source() if self.source else tree_rss_bytes() / 1e6
         cg = cgroup_memory_current_bytes()
         limit = cgroup_memory_limit_bytes()
         s = MemorySample(time.time(), tree, (cg / 1e6) if (cg is not None and limit is not None) else None, self.cap_mb)

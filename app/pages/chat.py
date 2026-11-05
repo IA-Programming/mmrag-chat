@@ -40,20 +40,6 @@ def selected_generator() -> str | None:
     return cur  # type: ignore[no-any-return]
 
 
-def _on_model() -> None:
-    state.set("settings.generator_id", state.widget_value("w_chat_model"))
-
-
-def _on_history() -> None:
-    state.set("settings.history_policy", state.widget_value("w_chat_history"))
-
-
-def _on_k() -> None:
-    r = dict(state.get("settings.retrieval"))
-    r["k"] = int(state.widget_value("w_chat_k"))
-    state.set("settings.retrieval", r)
-
-
 def export_buttons(location: str) -> None:
     msgs = state.get("chat.messages")
     rt = services.get_runtime()
@@ -195,14 +181,10 @@ def render() -> None:
     c1, c2, c3, c4 = st.columns([3, 2, 2, 1.3], vertical_alignment="bottom")
     with c1:
         if opts:
-            st.selectbox(
-                "Model",
-                opts,
-                index=opts.index(gen_id) if gen_id in opts else 0,
-                format_func=lambda o: labels.get(o, o),
-                key="w_chat_model",
-                on_change=_on_model,
-            )
+            picked = st.selectbox("Model", opts, index=opts.index(gen_id) if gen_id in opts else 0, format_func=lambda o: labels.get(o, o), key="w_chat_model")
+            if picked != gen_id:  # selecting never loads a model (FR-060 AC2); the swap is lazy
+                state.set("settings.generator_id", picked)
+                gen_id = picked
         else:
             st.warning("No generator is shipped in this bundle.")
     backend = "gemini" if gen_id == GEMINI_ID else "local"
@@ -221,16 +203,21 @@ def render() -> None:
             )
     with c3:
         pol = state.get("settings.history_policy")
-        st.selectbox(
+        new_pol = st.selectbox(
             "History",
             POLICIES,
             index=POLICIES.index(pol),
             key="w_chat_history",
-            on_change=_on_history,
             format_func=lambda p: f"window ({state.get('settings.history_window')})" if p == "window" else p,
         )
+        if new_pol != pol:
+            state.set("settings.history_policy", new_pol)
     with c4:
-        st.number_input("Sources k", 1, 10, int(state.get("settings.retrieval")["k"]), key="w_chat_k", on_change=_on_k)
+        r = dict(state.get("settings.retrieval"))
+        k = int(st.number_input("Sources k", 1, 10, int(r["k"]), key="w_chat_k"))
+        if k != int(r["k"]):
+            r["k"] = k
+            state.set("settings.retrieval", r)
 
     if n_items == 0:
         _empty_state()

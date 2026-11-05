@@ -19,10 +19,11 @@ BUNDLE_DIR = REPO_ROOT / "bundle"
 DATASETS_DIR = REPO_ROOT / "datasets"
 
 DEFAULT_GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/openai/"
-# Researched 2026-11: highest free-tier allowance among multimodal (image+audio+video in)
-# Gemini models; see docs/DEVELOPMENT.md "Bring your own key".
-DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite"
-UI_MODES = ("navigation", "tabs")
+# Verified 2026-11-05 with a free-tier key (experiments/ledger.jsonl, EXP-GEMINI-01): Flash-Lite is the
+# free-tier family with the most generous limits, and 3.5-flash-lite accepts text, image, audio and
+# video (as a data URL) on the OpenAI-compatible endpoint. 3.1-flash-lite returned 503 (overloaded);
+# gemma-4 rejects audio. Testers can type another model id in Settings.
+DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite"
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR")
 
 
@@ -59,7 +60,6 @@ class GeminiConfig:
 @dataclass(frozen=True)
 class AppConfig:
     memory_cap_mb: int = 2700
-    ui_mode: str = "navigation"
     log_level: str = "INFO"
     enable_gemini_fallback: bool = False
     bundle_base_url: str | None = None
@@ -99,9 +99,6 @@ def load_config(secrets: Mapping[str, Any] | None = None, env: Mapping[str, str]
         cap = 2700
     cap = max(256, min(cap, 65536))
 
-    ui_mode = (pick("app", "ui_mode", "MMRAG_UI_MODE") or "navigation").lower()
-    if ui_mode not in UI_MODES:
-        ui_mode = "navigation"
     level = (pick("app", "log_level", "MMRAG_LOG_LEVEL") or "INFO").upper()
     if level not in LOG_LEVELS:
         level = "INFO"
@@ -116,7 +113,6 @@ def load_config(secrets: Mapping[str, Any] | None = None, env: Mapping[str, str]
     session_root = env.get("MMRAG_SESSION_ROOT")
     return AppConfig(
         memory_cap_mb=cap,
-        ui_mode=ui_mode,
         log_level=level,
         enable_gemini_fallback=_bool(pick("app", "enable_gemini_fallback", "MMRAG_ENABLE_GEMINI"), False),
         bundle_base_url=pick("app", "bundle_base_url", "MMRAG_BUNDLE_BASE_URL"),

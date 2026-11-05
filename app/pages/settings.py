@@ -54,9 +54,10 @@ def _models() -> None:
         index=opts.index(gen) if gen in opts else 0,
         format_func=lambda o: labels.get(o, o),
         key="w_settings_model",
-        on_change=lambda: state.set("settings.generator_id", state.widget_value("w_settings_model")),
         help="Selecting a model never loads it; the swap happens on the next generation.",
     )
+    if pick != gen:
+        state.set("settings.generator_id", pick)
     preset = rt.presets.get(pick) if pick != "gemini" else None
     genparams.panel(
         "settings",

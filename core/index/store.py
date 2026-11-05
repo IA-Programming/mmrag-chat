@@ -152,7 +152,22 @@ class IndexHandle:
         self.created_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
         self.build_ms = 0.0
         self.peak_mb = 0.0
-        self.set_meta(schema_version=str(SCHEMA_VERSION), embedder_fingerprint=fingerprint, dim=str(dim), bits=str(bits), created_at=self.created_at)
+        if not self.meta().get("schema_version"):
+            self.set_meta(schema_version=str(SCHEMA_VERSION), embedder_fingerprint=fingerprint, dim=str(dim), bits=str(bits), created_at=self.created_at)
+
+    @classmethod
+    def open(cls, root: Path) -> IndexHandle:
+        """Re-open a persisted index (eval cache / replay). Vectors load with allow_pickle=False."""
+        db = sqlite3.connect(str(root / "sidecar.sqlite"))
+        meta = dict(db.execute("SELECT key, value FROM meta").fetchall())
+        db.close()
+        h = cls(
+            root, dim=int(meta["dim"]), bits=int(meta["bits"]), keep_float32=(root / "vectors.npy").exists(), fingerprint=meta.get("embedder_fingerprint", "")
+        )
+        h.store = TurboVecStore.from_bytes((root / "index.tv").read_bytes(), h.dim, h.bits)
+        if h.keep_float32:
+            h.vectors = np.load(root / "vectors.npy", allow_pickle=False).astype(np.float32)
+        return h
 
     # ------------------------------------------------------------------ meta
     def set_meta(self, **kv: str) -> None:

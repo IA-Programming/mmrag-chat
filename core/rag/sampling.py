@@ -27,7 +27,8 @@ INT_FIELDS = {"top_k", "max_tokens", "seed"}
 # Backend capability matrix: fields a backend honors (others are disabled in the UI and never sent).
 BACKEND_FIELDS: dict[str, set[str]] = {
     "local": set(ALL_FIELDS),
-    "gemini": {"temperature", "top_p", "max_tokens", "seed", "presence_penalty", "frequency_penalty"},
+    # Verified on gemini-3.5-flash-lite (EXP-GEMINI-01): seed, top_k, presence/frequency_penalty -> HTTP 400.
+    "gemini": {"temperature", "top_p", "max_tokens"},
 }
 DISABLED_TOOLTIP = {
     "gemini": "Not supported by the Gemini OpenAI-compatible endpoint; not sent.",

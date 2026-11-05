@@ -1,4 +1,9 @@
-"""UI shell (FR-082): st.navigation (default) or st.tabs, built from the same page render() functions."""
+"""UI shell (FR-082): st.navigation with one st.Page per render() function.
+
+EXP-UI-01 (experiments/ledger.jsonl) compared st.navigation with st.tabs built from the same
+render() functions: navigation executes 1 page body per rerun instead of 6, has a 24 ms vs 51 ms
+p95 rerun latency, keeps state and gives per-page URLs. The tabs shell was deleted (FR-082 AC2).
+"""
 
 from __future__ import annotations
 
@@ -11,7 +16,6 @@ from app.components import chrome
 
 PageFn = Callable[[], None]
 _PAGES: dict[str, Any] = {}
-_MODE = {"value": "navigation"}
 
 
 def specs() -> list[tuple[str, str, str, PageFn, bool]]:
@@ -27,18 +31,9 @@ def specs() -> list[tuple[str, str, str, PageFn, bool]]:
     ]
 
 
-def run(ui_mode: str = "navigation") -> None:
-    _MODE["value"] = ui_mode
-    if ui_mode == "tabs":
-        chrome.sidebar()
-        items = specs()
-        tabs = st.tabs([f"{title}" for _, title, _, _, _ in items])
-        for tab, (_, _, _, fn, _) in zip(tabs, items, strict=True):
-            with tab:
-                fn()
-        return
-    pages = []
+def run() -> None:
     _PAGES.clear()
+    pages = []
     for pid, title, icon, fn, default in specs():
         page = st.Page(fn, title=title, icon=icon, url_path=pid, default=default)
         _PAGES[pid] = page
@@ -49,13 +44,11 @@ def run(ui_mode: str = "navigation") -> None:
 
 
 def link(container: Any, page_id: str, label: str, icon: str | None = None) -> None:
-    if _MODE["value"] == "navigation" and page_id in _PAGES:
+    if page_id in _PAGES:
         container.page_link(_PAGES[page_id], label=label, icon=icon)
-    else:
-        container.caption(f"Open the **{label.removeprefix('Go to ').removeprefix('Open ')}** tab.")
 
 
 def switch(page_id: str) -> None:
-    if _MODE["value"] == "navigation" and page_id in _PAGES:
+    if page_id in _PAGES:
         st.switch_page(_PAGES[page_id])
     st.rerun()
