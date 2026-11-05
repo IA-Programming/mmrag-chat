@@ -117,6 +117,15 @@ def main(argv: list[str] | None = None) -> int:
             }[role]
             assets.append({"name": name, "kind": "model", "role": role_name, "preset": p.id, "sha256": digest, "size_bytes": size})
 
+    # Licenses of every redistributed model repo ride along as release assets (not in the manifest).
+    for repo in sorted({p.source["repo"] for p in chosen}):
+        d = MODELS_DIR / repo.replace("/", "__")
+        lic = next((f for f in sorted(d.glob("*")) if f.name.upper().startswith(("LICENSE", "NOTICE")) and not f.name.endswith(".json")), None)
+        target = args.out / f"LICENSE-{repo.replace('/', '__')}.txt"
+        if lic is not None:
+            shutil.copyfile(lic, target)
+        else:
+            target.write_text(f"{repo}: see https://huggingface.co/{repo} (license declared in the model card metadata).\n")
     manifest = {
         "schema": 1,
         "bundle_id": args.bundle_id,

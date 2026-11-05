@@ -135,6 +135,18 @@ def fetch(spec: FileSpec, verify_existing: bool = False) -> dict[str, Any]:
     return prov
 
 
+def fetch_license(repo: str, revision: str) -> Path | None:
+    """Model licenses travel with redistributed weights (release assets)."""
+    from huggingface_hub import HfApi, hf_hub_download
+
+    names = [f for f in HfApi().list_repo_files(repo, revision=revision) if f.upper().startswith(("LICENSE", "NOTICE"))]
+    if not names:
+        return None
+    dest = MODELS_DIR / repo.replace("/", "__")
+    dest.mkdir(parents=True, exist_ok=True)
+    return Path(hf_hub_download(repo_id=repo, filename=names[0], revision=revision, local_dir=dest))
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--only", nargs="*", default=None, help="candidate ids to fetch")
@@ -160,6 +172,12 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:  # report and continue with the next file
             failures += 1
             print(f"FAIL   {spec.filename}: {exc}", file=sys.stderr)
+    for repo, rev in sorted({(s.repo, s.revision) for s in wanted}):
+        try:
+            lic = fetch_license(repo, rev)
+            print(f"license {repo}: {lic.name if lic else 'none in repo (see model card)'}")
+        except Exception as exc:
+            print(f"license {repo}: not fetched ({type(exc).__name__})", file=sys.stderr)
     return 1 if failures else 0
 
 

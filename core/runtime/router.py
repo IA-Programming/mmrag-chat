@@ -54,8 +54,8 @@ class RouterProcess:
         extra_args: list[str] | None = None,
     ) -> None:
         self.argv_prefix = argv_prefix
-        self.preset_ini = preset_ini
-        self.log_dir = log_dir
+        self.preset_ini = preset_ini.resolve()  # the child runs with cwd=log_dir: never pass relative paths
+        self.log_dir = log_dir.resolve()
         self.log = logger or get_logger()
         self.models_max = models_max
         self.extra_args = extra_args or []
@@ -164,14 +164,29 @@ class RouterClient:
         self.base_url = base_url
         self.api_key = api_key
         self.log = logger or get_logger()
+        # No keep-alive pooling: llama-server closes idle sockets after a few seconds and a reused
+        # stale socket fails a POST with RemoteProtocolError. Fresh loopback connections cost ~0.1 ms.
         self._http = net.client(
             base_url=base_url,
             timeout=httpx.Timeout(600.0, connect=5.0),
             headers={"Authorization": f"Bearer {api_key}"},
+            keepalive=False,
         )
 
     def close(self) -> None:
         self._http.close()
+
+    def _post(self, path: str, **kw: Any) -> httpx.Response:
+        try:
+            return self._http.post(path, **kw)
+        except httpx.RemoteProtocolError:  # one retry on a dropped connection
+            return self._http.post(path, **kw)
+
+    def _get(self, path: str, **kw: Any) -> httpx.Response:
+        try:
+            return self._http.get(path, **kw)
+        except httpx.RemoteProtocolError:
+            return self._http.get(path, **kw)
 
     # ------------------------------------------------------------------ errors
     @staticmethod
@@ -186,7 +201,7 @@ class RouterClient:
 
     # ------------------------------------------------------------------ models
     def models(self) -> list[dict[str, Any]]:
-        r = self._http.get("/models")
+        r = self._get("/models")
         self._raise(r, "models")
         data: list[dict[str, Any]] = r.json().get("data", [])
         return data
@@ -200,7 +215,7 @@ class RouterClient:
 
     def load(self, model: str, timeout: float = 120.0) -> float:
         t0 = time.perf_counter()
-        r = self._http.post("/models/load", json={"model": model})
+        r = self._post("/models/load", json={"model": model})
         self._raise(r, "load")
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
@@ -214,7 +229,7 @@ class RouterClient:
 
     def unload(self, model: str, timeout: float = 30.0) -> float:
         t0 = time.perf_counter()
-        r = self._http.post("/models/unload", json={"model": model})
+        r = self._post("/models/unload", json={"model": model})
         if r.status_code >= 400 and self.status(model).get("value") in ("unloaded", "missing"):
             return 0.0
         self._raise(r, "unload")
@@ -230,18 +245,18 @@ class RouterClient:
 
     # ------------------------------------------------------------------ inference
     def embeddings(self, model: str, inputs: list[Any]) -> list[list[float]]:
-        r = self._http.post("/v1/embeddings", json={"model": model, "input": inputs, "encoding_format": "float"})
+        r = self._post("/v1/embeddings", json={"model": model, "input": inputs, "encoding_format": "float"})
         self._raise(r, "embedding")
         data = sorted(r.json()["data"], key=lambda d: d["index"])
         return [d["embedding"] for d in data]
 
     def tokenize_count(self, model: str, text: str) -> int:
-        r = self._http.post("/tokenize", json={"model": model, "content": text})
+        r = self._post("/tokenize", json={"model": model, "content": text})
         self._raise(r, "tokenize")
         return len(r.json().get("tokens", []))
 
     def chat(self, model: str, messages: list[dict[str, Any]], params: dict[str, Any]) -> dict[str, Any]:
-        r = self._http.post("/v1/chat/completions", json={"model": model, "messages": messages, "stream": False, **params})
+        r = self._post("/v1/chat/completions", json={"model": model, "messages": messages, "stream": False, **params})
         self._raise(r, "chat")
         out: dict[str, Any] = r.json()
         return out

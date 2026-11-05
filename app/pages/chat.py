@@ -80,6 +80,8 @@ def _render_message(i: int, m: dict[str, Any]) -> None:
                 st.caption(f"Event id `{m['event_id']}` - details on the Logs page.")
         if m.get("text"):
             st.markdown(m["text"])  # unsafe_allow_html stays False (NFR-SEC-LLM)
+        for note in m.get("notes", []):
+            st.caption(f":material/info: {note}")
         if m["role"] != "assistant":
             return
         if m.get("reasoning"):
@@ -307,6 +309,7 @@ def _run_turn(text: str, att: Attachment | None, history: list[dict[str, Any]], 
             record["reasoning"] = turn.reasoning
             record["sources"] = turn.source_rows()
             record["stats"] = turn.stats or {"stopped": True}
+            record["notes"] = list(turn.notes)
             if not turn.finished:
                 record["stats"]["stopped"] = True
             if turn.error:

@@ -47,7 +47,10 @@ def _matryoshka() -> None:
     q = c1.text_input("Query", key="w_pg_query", placeholder="e.g. Which planet has the tallest volcano?")
     dims = c2.pills("Dimensions", [768, 512, 256, 128], selection_mode="multi", default=[768, 512, 256, 128], key="w_pg_dims")
     k = c3.number_input("k", 1, 20, 5, key="w_pg_k")
-    if st.button("Run comparison", key="w_pg_run", type="primary", disabled=not q.strip()):
+    run = st.button("Run comparison", key="w_pg_run", type="primary")
+    if run and not q.strip():
+        st.warning("Type a query first.")
+    if run and q.strip():
         try:
             with st.status("Embedding the query…") as s:
                 t0 = time.perf_counter()

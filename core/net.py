@@ -84,6 +84,7 @@ def client(
     headers: dict[str, str] | None = None,
     follow_redirects: bool = False,
     transport: httpx.BaseTransport | None = None,
+    keepalive: bool = True,
 ) -> httpx.Client:
     """Create an allowlisted synchronous client. Proxy env vars are ignored for loopback."""
     if base_url:
@@ -96,4 +97,5 @@ def client(
         trust_env=not base_url.startswith("http://127.0.0.1"),
         event_hooks={"request": [_guard], "response": [_guard_response]},
         transport=transport,
+        limits=httpx.Limits(max_keepalive_connections=None if keepalive else 0),
     )

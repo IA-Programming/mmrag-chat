@@ -282,7 +282,7 @@ def pct(mb: float) -> float:
     return round(100 * mb / CAP, 1)
 
 
-def evaluate(rig: Rig, p: ModelPreset, index: IndexHandle, ds: Path, max_queries: int) -> Result:
+def evaluate(rig: Rig, p: ModelPreset, index: IndexHandle, ds: Path, max_queries: int, gates_only: bool = False) -> Result:
     r = Result(p.id)
     files = [MODELS_ROOT / f for f in p.files.values()]
     r.metrics["files_mb"] = round(sum(f.stat().st_size for f in files if f.exists()) / 1e6, 1)
@@ -342,6 +342,9 @@ def evaluate(rig: Rig, p: ModelPreset, index: IndexHandle, ds: Path, max_queries
     r.metrics["g5_drift_pct"] = round(drift, 2)
     r.metrics["load_warm_s_avg"] = round((time.time() - t0) / len(rss_loaded), 2)
     r.gates["G5q"] = "pass" if abs(drift) <= GATES["G5"]["rss_drift_max_pct"] else "fail"
+    if gates_only:
+        r.verdict = "hard gates passed" if r.gates["G5q"] == "pass" else "rejected at G5q"
+        return r
     # ---------------- G2 + G3: latency and grounded accuracy
     sample = stratified(queries, max_queries)
     rows = []
@@ -413,6 +416,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--max-frames", type=int, default=4)
     ap.add_argument("--include", nargs="*", default=["text", "images", "audio", "video"])
     ap.add_argument("--workdir", type=Path, default=ROOT / "experiments" / "_raw" / "eval")
+    ap.add_argument("--gates-only", action="store_true", help="stop after the hard gates G0, G1, G5q")
     args = ap.parse_args(argv)
     args.workdir.mkdir(parents=True, exist_ok=True)
     cands = [
@@ -431,7 +435,7 @@ def main(argv: list[str] | None = None) -> int:
         for p in cands:
             print(f"== {p.id}", flush=True)
             try:
-                r = evaluate(rig, p, index, args.dataset, args.max_queries)
+                r = evaluate(rig, p, index, args.dataset, args.max_queries, gates_only=args.gates_only)
             except Exception as exc:
                 r = Result(
                     p.id, gates={"G0": "error"}, metrics={"error": f"{type(exc).__name__}: {exc}", "tb": traceback.format_exc()[-1200:]}, verdict="error"
@@ -441,7 +445,7 @@ def main(argv: list[str] | None = None) -> int:
                     rig.governor.unload_all(keep=(ALWAYS_RESIDENT,))
                 except Exception:
                     pass
-            append("S12-gates", candidate_id=p.id, env=env(), params={"n_ctx": p.n_ctx, "kv": p.kv.model_dump(), "files": p.files, "max_queries": args.max_queries},
+            append("S12-hard-gates" if args.gates_only else "S12-gates", candidate_id=p.id, env=env(), params={"n_ctx": p.n_ctx, "kv": p.kv.model_dump(), "files": p.files, "max_queries": args.max_queries},
                    metrics={k: v for k, v in r.metrics.items() if k != "examples"}, gates=r.gates, verdict=r.verdict)  # fmt: skip
             results.append(r)
             print(
