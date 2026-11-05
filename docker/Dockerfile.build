@@ -1,0 +1,41 @@
+# Toolchain image for the llama.cpp runtime build (DR-001).
+#
+# Built on Debian 11 (bullseye) on purpose: Streamlit Community Cloud runs Debian 11
+# (glibc 2.31). A binary linked on a newer distro needs a newer glibc and will not
+# start there. libstdc++/libgcc are linked statically by tools/llama/build.sh, so the
+# only shared deps left are glibc/libm/libpthread/libdl, which bullseye provides.
+#
+# Proxy-agnostic: in a restricted dev session pass
+#   --network host --build-arg HTTPS_PROXY=... --secret id=proxy_ca,src=<ca bundle>
+# In CI (GitHub Actions) none of that is needed.
+FROM python:3.11-slim-bullseye
+
+ARG HTTPS_PROXY
+RUN --mount=type=secret,id=proxy_ca,required=false \
+    set -eux; \
+    if [ -s /run/secrets/proxy_ca ]; then \
+        cp /run/secrets/proxy_ca /usr/local/share/ca-certificates/dev-proxy.crt; \
+        update-ca-certificates; \
+        export https_proxy="$HTTPS_PROXY"; \
+    fi; \
+    # Debian 11 LTS ended in Aug 2026: security pool files now live on archive.debian.org.
+    printf '%s\n' \
+        'deb https://deb.debian.org/debian bullseye main' \
+        'deb https://deb.debian.org/debian bullseye-updates main' \
+        'deb https://archive.debian.org/debian-security bullseye-security main' \
+        > /etc/apt/sources.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends build-essential file binutils; \
+    # gcc 10 (bullseye) lacks -mavxvnni & friends needed by the newer CPU variants:
+    # use clang 18 from apt.llvm.org (still links against bullseye's glibc 2.31).
+    python3 -c "import urllib.request; open('/etc/apt/trusted.gpg.d/apt.llvm.org.asc','wb').write(urllib.request.urlopen('https://apt.llvm.org/llvm-snapshot.gpg.key').read())"; \
+    echo 'deb https://apt.llvm.org/bullseye/ llvm-toolchain-bullseye-18 main' > /etc/apt/sources.list.d/llvm.list; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends clang-18 lld-18; \
+    rm -rf /var/lib/apt/lists/*; \
+    pip install --no-cache-dir cmake==3.31.6 ninja==1.11.1.4; \
+    clang-18 --version | head -1; cmake --version | head -1; ldd --version | head -1
+
+ENV CC=clang-18 CXX=clang++-18
+
+WORKDIR /src

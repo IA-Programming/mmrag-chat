@@ -1,0 +1,36 @@
+# Capped emulator of Streamlit Community Cloud (DR-008).
+#   docker compose -f docker/compose.cap.yml run --rm selftest      # cap self-test first
+#   docker compose -f docker/compose.cap.yml up app                  # app on http://127.0.0.1:8501
+#   docker compose -f docker/compose.cap.yml run --rm cap pytest -m memory -q
+# `--cpus` alone still exposes 4 cores (llama.cpp would start 4 threads), so cores are pinned too.
+x-cap: &cap
+  build:
+    context: ..
+    dockerfile: docker/Dockerfile.runtime
+  image: mmrag-runtime:bullseye
+  mem_limit: 2700m
+  memswap_limit: 2700m
+  cpus: 2
+  cpuset: "0,1"
+  working_dir: /app
+  volumes:
+    - ..:/app
+    - ${MMRAG_MODELS_DIR:-~/.cache/mmrag/models}:/models:ro
+    - ${MMRAG_BUNDLE_SOURCE_DIR:-../build/bundle}:/bundle-src:ro
+  environment:
+    MMRAG_MEMORY_CAP_MB: "2700"
+    MMRAG_THREADS: "2"
+    MMRAG_BUNDLE_SOURCE_DIR: /bundle-src
+    MMRAG_MANIFEST: ${MMRAG_MANIFEST_IN_CONTAINER:-/app/bundle/manifest.json}
+    MMRAG_ALL_PRESETS: ${MMRAG_ALL_PRESETS:-0}
+
+services:
+  app:
+    <<: *cap
+    ports: ["127.0.0.1:8501:8501"]
+  cap:
+    <<: *cap
+    entrypoint: []
+  selftest:
+    <<: *cap
+    entrypoint: ["python", "-m", "tools.cap_selftest"]

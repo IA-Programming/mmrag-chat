@@ -1,0 +1,61 @@
+[project]
+name = "mmrag-lab"
+version = "0.1.0"
+description = "Multimodal RAG chat on small local models (llama.cpp + EmbeddingGemma-2) inside Streamlit Community Cloud limits"
+requires-python = ">=3.11,<3.12"
+license = { text = "MIT" }
+
+[tool.ruff]
+line-length = 160
+target-version = "py311"
+extend-exclude = [".venv", "datasets"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "SIM", "RUF", "N"]
+ignore = [
+  "S101",   # asserts are fine in tests and invariants
+  "S311",   # random is used for deterministic synthetic data, not crypto
+  "S603",   # subprocess with argv lists is the policy (no shell); audited in tests
+  "S607",
+  "S310",   # urllib in stdlib-only dev smoke tests
+  "S104",
+  "B008",
+  "RUF001", "RUF002", "RUF003",  # unicode punctuation in UI strings
+  "SIM105",
+  "E501",
+  "N802",
+  "S110",   # try/except/pass is deliberate in best-effort UI/log callbacks
+  "SIM108", "SIM117", "UP038", "RUF005", "RUF046",  # style preferences, not defects
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B", "N"]
+"tools/**" = ["S", "SIM115"]
+
+[tool.ruff.format]
+line-ending = "lf"
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+ignore_missing_imports = true
+warn_unused_ignores = false
+disallow_untyped_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+exclude = ["tests/fakes/"]
+
+[[tool.mypy.overrides]]
+module = ["app.*"]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+  "needs_runtime: requires the real llama-server build + models (make test-int)",
+  "memory: runs inside the capped emulator (make test-mem)",
+  "eval: dev evaluation runs (make eval)",
+  "slow: slower unit tests (still offline)",
+]
+timeout = 300
+filterwarnings = ["ignore::DeprecationWarning"]

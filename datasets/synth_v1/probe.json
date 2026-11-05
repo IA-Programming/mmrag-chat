@@ -1,0 +1,202 @@
+{
+  "items": [
+    {
+      "id": "P01",
+      "path": "corpus/text/kestrelmoor_light.md",
+      "modality": "text"
+    },
+    {
+      "id": "P02",
+      "path": "corpus/text/velmora_observatory.md",
+      "modality": "text"
+    },
+    {
+      "id": "P03",
+      "path": "corpus/text/brindle_robotics.md",
+      "modality": "text"
+    },
+    {
+      "id": "P04",
+      "path": "corpus/text/lantern_tide_festival.md",
+      "modality": "text"
+    },
+    {
+      "id": "P05",
+      "path": "corpus/text/saltwing_ferry_line.md",
+      "modality": "text"
+    },
+    {
+      "id": "P06",
+      "path": "corpus/text/lowcairn_folk_archive.md",
+      "modality": "text"
+    },
+    {
+      "id": "P07",
+      "path": "corpus/text/glimmerfruit.md",
+      "modality": "text"
+    },
+    {
+      "id": "P08",
+      "path": "corpus/text/orrinhal_narrow_gauge_railway.md",
+      "modality": "text"
+    },
+    {
+      "id": "P09",
+      "path": "corpus/images/chart_01_glimmerfruit_2024.png",
+      "modality": "image"
+    },
+    {
+      "id": "P10",
+      "path": "corpus/images/chart_06_saltwing_weekdays.png",
+      "modality": "image"
+    },
+    {
+      "id": "P11",
+      "path": "corpus/images/slide_01_graskworth_kite.png",
+      "modality": "image"
+    },
+    {
+      "id": "P12",
+      "path": "corpus/images/slide_11_corvid9.png",
+      "modality": "image"
+    },
+    {
+      "id": "P13",
+      "path": "corpus/images/photo_01.jpg",
+      "modality": "image"
+    },
+    {
+      "id": "P14",
+      "path": "corpus/audio/audio_06_corvid9_demo.wav",
+      "modality": "audio"
+    },
+    {
+      "id": "P15",
+      "path": "corpus/audio/audio_01_ferry_gate.wav",
+      "modality": "audio"
+    },
+    {
+      "id": "P16",
+      "path": "corpus/audio/audio_11_weather_wind.wav",
+      "modality": "audio"
+    },
+    {
+      "id": "P17",
+      "path": "corpus/audio/audio_15_bell.wav",
+      "modality": "audio"
+    },
+    {
+      "id": "P18",
+      "path": "corpus/video/video_01_pier.mp4",
+      "modality": "video"
+    },
+    {
+      "id": "P19",
+      "path": "corpus/video/video_02_kite_results.mp4",
+      "modality": "video"
+    },
+    {
+      "id": "P20",
+      "path": "corpus/video/video_11_motion.mp4",
+      "modality": "video"
+    }
+  ],
+  "queries": [
+    {
+      "text": "Who is the keeper of the Kestrelmoor Light?",
+      "expected": [
+        "P01"
+      ]
+    },
+    {
+      "text": "How large is the main mirror of the Velmora Observatory?",
+      "expected": [
+        "P02"
+      ]
+    },
+    {
+      "text": "Who founded Brindle Robotics?",
+      "expected": [
+        "P03"
+      ]
+    },
+    {
+      "text": "In which month is the Lantern Tide Festival held?",
+      "expected": [
+        "P04"
+      ]
+    },
+    {
+      "text": "How long does a crossing on the Saltwing Ferry Line take?",
+      "expected": [
+        "P05"
+      ]
+    },
+    {
+      "text": "When did the Lowcairn Folk Archive open?",
+      "expected": [
+        "P06"
+      ]
+    },
+    {
+      "text": "Where is Glimmerfruit mainly grown?",
+      "expected": [
+        "P07"
+      ]
+    },
+    {
+      "text": "How long is the Orrinhal Narrow-Gauge Railway?",
+      "expected": [
+        "P08"
+      ]
+    },
+    {
+      "text": "Which district harvested the most Glimmerfruit in 2024?",
+      "expected": [
+        "P09"
+      ]
+    },
+    {
+      "text": "On which day of the week does the Saltwing Ferry Line carry the most passengers?",
+      "expected": [
+        "P10"
+      ]
+    },
+    {
+      "text": "What colour is Zeno Graskworth's kite?",
+      "expected": [
+        "P11"
+      ]
+    },
+    {
+      "text": "What is the maximum flight time of the Corvid-9 survey drone?",
+      "expected": [
+        "P12"
+      ]
+    },
+    {
+      "text": "When is the Corvid-9 demo now taking place?",
+      "expected": [
+        "P14"
+      ]
+    },
+    {
+      "text": "From which gate does the evening sailing of the Saltwing Ferry Line to Dunlin leave?",
+      "expected": [
+        "P15"
+      ]
+    },
+    {
+      "text": "When does the new pier at Pellby open?",
+      "expected": [
+        "P18"
+      ]
+    },
+    {
+      "text": "Who won Duskwater Kite Week according to the results bulletin?",
+      "expected": [
+        "P19"
+      ]
+    }
+  ]
+}

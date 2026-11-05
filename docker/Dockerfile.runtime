@@ -1,0 +1,15 @@
+# Community Cloud emulation (DR-008): same OS (Debian 11), same Python minor (3.11), same entrypoint.
+# Resource caps are applied at run time by docker/compose.cap.yml (2.7 GB, 2 pinned CPUs).
+# Derived from the owner's reference Dockerfile/devcontainer with these corrections: one Python
+# minor (3.11), no Playwright, single CMD, no apt upgrade, XSRF/CORS left at the hardened defaults.
+FROM python:3.11-slim-bullseye
+
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+WORKDIR /app
+COPY requirements.txt constraints.txt requirements-dev.txt ./
+RUN pip install -r requirements.txt -r requirements-dev.txt
+# Replay packages.txt like the platform does (currently none are needed: ffmpeg comes from imageio-ffmpeg).
+COPY . /app
+EXPOSE 8501
+HEALTHCHECK CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=3)"
+CMD ["streamlit", "run", "streamlit_app.py", "--server.port", "8501", "--server.address", "0.0.0.0"]

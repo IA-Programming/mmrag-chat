@@ -1,0 +1,88 @@
+# Candidate models for the DEV evaluation matrix (S12). NOT shipped; the runtime
+# reads only bundle/*.json. Every file is pinned by HF repo revision; the fetcher
+# verifies SHA-256 against the Hub's LFS oid and records provenance.
+#
+# kind: embedder | generator.   text_only: true -> no mmproj is loaded.
+# A candidate that exceeds the specs is REJECTED IN THE LEDGER, never deleted here.
+
+embedder:
+  id: embeddinggemma-2
+  repo: unsloth/embeddinggemma-2-GGUF
+  revision: 031f0d4b35536f69ab3509d4893c923264fcf253
+  files:
+    model: embeddinggemma-2-UD-Q4_K_XL.gguf
+    mmproj: mmproj-Q8_0.gguf
+  reference:                       # EXP-EMB-08 parity reference (dev only)
+    model: embeddinggemma-2-BF16.gguf
+    mmproj: mmproj-BF16.gguf
+
+generators:
+  - id: lfm3-vl-2b-qad-q4_0
+    repo: LiquidAI/LFM3-VL-2B-GGUF
+    revision: 1add221a5ea6c047fcf1eaaf2d247939d7cf8849
+    files: {model: LFM3-VL-2B-QAD-Q4_0.gguf, mmproj: mmproj-LFM3-VL-2B-Q8_0.gguf}
+    sampling_preset: lfm3-vl-2b
+    family: lfm3
+  - id: lfm3-vl-2b-q4_k_m
+    repo: LiquidAI/LFM3-VL-2B-GGUF
+    revision: 1add221a5ea6c047fcf1eaaf2d247939d7cf8849
+    files: {model: LFM3-VL-2B-Q4_K_M.gguf, mmproj: mmproj-LFM3-VL-2B-Q8_0.gguf}
+    sampling_preset: lfm3-vl-2b
+    family: lfm3
+  - id: lfm3-omni-2b-q4_0
+    repo: LiquidAI/LFM3-Omni-2B-GGUF
+    revision: d508b88f08a5b4286f2d2805a6a8d69a0ff44c72
+    files: {model: LFM3-Omni-2B-Q4_0.gguf, mmproj: mmproj-LFM3-Omni-2B-Q4_0.gguf}
+    sampling_preset: lfm3-omni-2b
+    family: lfm3
+  - id: lfm3-1.7b-qad-q4_0
+    repo: LiquidAI/LFM3-1.7B-GGUF
+    revision: cd0c74c575b5c416f3011b5b4c298077f26ca8c2
+    files: {model: LFM3-1.7B-QAD-Q4_0.gguf}
+    text_only: true
+    sampling_preset: lfm3-1.7b
+    family: lfm3
+  - id: qwen3.5-0.8b-q4_k_m
+    repo: unsloth/Qwen3.5-0.8B-GGUF
+    revision: 6ab461498e2023f6e3c1baea90a8f0fe38ab64d0
+    files: {model: Qwen3.5-0.8B-Q4_K_M.gguf, mmproj: mmproj-F16.gguf}
+    sampling_preset: qwen3.5-0.8b
+    family: qwen3.5
+  - id: qwen3.5-2b-q4_k_m-text
+    repo: unsloth/Qwen3.5-2B-GGUF
+    revision: f6d5376be1edb4d416d56da11e5397a961aca8ae
+    files: {model: Qwen3.5-2B-Q4_K_M.gguf}
+    text_only: true
+    sampling_preset: qwen3.5-2b
+    family: qwen3.5
+  - id: minicpm-v-4.7-1b-q4_k_m
+    repo: openbmb/MiniCPM-V-4.7-1B-gguf
+    revision: 345adbfa02c4a4671e61b7c75502dc9bf24fa93d
+    files: {model: MiniCPM-V-4_7-1B-Q4_K_M.gguf, mmproj: mmproj-model-f16-4x.gguf}
+    sampling_preset: minicpm-v-4.7-1b
+    family: minicpm
+  - id: lfm2.5-vl-1.6b-q4_0
+    repo: LiquidAI/LFM2.5-VL-1.6B-GGUF
+    revision: 36fc16bc95133424921bcc3da009e83b2f23ffb5
+    files: {model: LFM2.5-VL-1.6B-Q4_0.gguf, mmproj: mmproj-LFM2.5-VL-1.6b-Q8_0.gguf}
+    sampling_preset: lfm2.5-vl-1.6b
+    family: lfm2.5
+  # Owner-requested, expected to fail G0/G1 (full-attention 3B; smallest mmproj is F16 840 MB).
+  - id: ministral-3-3b-q4_k_m
+    repo: mistralai/Ministral-3-3B-Instruct-2512-GGUF
+    revision: eb599d408350ea2bb60452cb86be7c7b2fc28227
+    files: {model: Ministral-3-3B-Instruct-2512-Q4_K_M.gguf, mmproj: Ministral-3-3B-Instruct-2512-BF16-mmproj.gguf}
+    sampling_preset: ministral-3-3b
+    family: ministral
+    quant_ladder:                  # EXP-QUANT-01: first quant that fits text-only
+      repo: unsloth/Ministral-3-3B-Instruct-2512-GGUF
+      revision: 7564922f37fa5bbb62b87f09a55c12f1f91d7a6a
+      files: [Ministral-3-3B-Instruct-2512-IQ4_XS.gguf, Ministral-3-3B-Instruct-2512-Q3_K_M.gguf,
+              Ministral-3-3B-Instruct-2512-Q2_K.gguf, Ministral-3-3B-Instruct-2512-UD-IQ2_M.gguf]
+  # Negative control (expected to exceed the cap on the GGUF route).
+  - id: gemma-4-e2b-q4_0
+    repo: ggml-org/gemma-4-E2B-it-GGUF
+    revision: 6938c58e698502037401a5f19f6905f2fb2f7dee
+    files: {model: gemma-4-E2B-it-Q4_0.gguf, mmproj: mmproj-gemma-4-E2B-it-Q8_0.gguf}
+    sampling_preset: gemma-4-e2b
+    family: gemma4
