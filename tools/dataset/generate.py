@@ -40,8 +40,8 @@ TOOLCHAIN_DEPS = {
     "text": ("python",),
     "records": ("python", "pillow", "matplotlib"),  # slide bboxes come from font metrics
     "images": ("pillow", "matplotlib", "numpy"),
-    "audio": ("espeak_ng", "ffmpeg"),
-    "video": ("pillow", "ffmpeg", "video_encoder"),
+    "audio": ("espeak_ng", "ffmpeg", "ffmpeg_sha256"),
+    "video": ("pillow", "ffmpeg", "ffmpeg_sha256", "video_encoder"),
 }
 RECORD_FILES = ("ground_truth/facts.jsonl", "queries/queries.jsonl", "dialogues/dialogues.jsonl", "probe.json")
 SKIP_HASH = ("checksums.sha256",)
@@ -86,6 +86,7 @@ def toolchain() -> dict[str, str]:
         "pillow": PIL.__version__,
         "matplotlib": matplotlib.__version__,
         "ffmpeg": render.ffmpeg_version(),
+        "ffmpeg_sha256": render.ffmpeg_sha256(),
         "video_encoder": render.video_codec(),
         "espeak_ng": render.espeak_version(),
     }

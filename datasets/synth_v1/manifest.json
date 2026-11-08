@@ -49,14 +49,14 @@
       "overlap_tokens": 32
     }
   },
-  "bytes_total": 7962943,
+  "bytes_total": 7893342,
   "bytes_total_scope": "every file except manifest.json and checksums.sha256",
   "bytes_by_dir": {
     ".": 4353,
     "corpus/audio": 5489166,
-    "corpus/images": 1570180,
+    "corpus/images": 1500632,
     "corpus/text": 289401,
-    "corpus/video": 250674,
+    "corpus/video": 250621,
     "dialogues": 7040,
     "ground_truth": 92557,
     "queries": 25609,
@@ -105,6 +105,7 @@
     "pillow": "11.3.0",
     "matplotlib": "3.10.3",
     "ffmpeg": "7.0.2-static",
+    "ffmpeg_sha256": "e7e7fb30477f717e6f55f9180a70386c62677ef8a4d4d1a5d948f4098aa3eb99",
     "video_encoder": "libx264",
     "espeak_ng": "1.51"
   },
@@ -165,7 +166,7 @@
     "corpus/video/video_02_kite_results.mp4",
     "corpus/video/video_11_motion.mp4"
   ],
-  "sample_bytes": 1507760,
+  "sample_bytes": 1500986,
   "sample_counts": {
     "audio": 5,
     "images": 8,

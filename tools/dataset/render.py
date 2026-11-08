@@ -44,6 +44,20 @@ def espeak_exe() -> str | None:
     return shutil.which("espeak-ng")
 
 
+@functools.cache
+def ffmpeg_sha256() -> str:
+    """SHA-256 of the ffmpeg binary that ships with imageio-ffmpeg.
+
+    Two installations of the same imageio-ffmpeg release should download the same
+    static binary from the same URL, so this hash is reproducible across hosts
+    and is what the dataset's toolchain snapshot records (in addition to the
+    human-readable version string).
+    """
+    import hashlib
+
+    return hashlib.sha256(Path(ffmpeg_exe()).read_bytes()).hexdigest()
+
+
 def _run(argv: list[str], *, stdin: bytes | None = None) -> bytes:
     res = subprocess.run(argv, input=stdin, capture_output=True, timeout=FFMPEG_TIMEOUT_S, check=False)
     if res.returncode != 0:
