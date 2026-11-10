@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "family_fallback": {
+    "lfm3": {
+      "temperature": 0.1,
+      "top_k": 50,
+      "repeat_penalty": 1.1
+    }
+  },
+  "presets": {
+    "lfm3-vl-2b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-VL-2B",
+      "revision": "71d8e745d97c224984e0f20412f532a5ce9dfd3e",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 0.1,
+          "top_p": 1.0,
+          "top_k": 50,
+          "min_p": 0.0,
+          "repeat_penalty": 1.1
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "chat_template_kwargs"
+      },
+      "notes": "Card + GGUF metadata (general.sampling.temp=0.1, top_k=50, penalty_repeat=1.1). Model thinks by default; the app defaults thinking OFF for latency (EXP-THINK-01)."
+    },
+    "lfm3-1.7b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-1.7B",
+      "revision": "0dc4268b561499c648c7ba7c9466bf3d8d01517a",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 0.1,
+          "top_k": 50,
+          "repeat_penalty": 1.1
+        },
+        "math_stem": {
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "top_k": 20,
+          "repeat_penalty": 1.0
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "chat_template_kwargs"
+      }
+    },
+    "qwen3.5-0.8b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/Qwen/Qwen3.5-0.8B",
+      "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+      "checked_at": "2026-11-05",
+      "default_mode": "text_nonthinking",
+      "modes": {
+        "text_nonthinking": {
+          "temperature": 1.0,
+          "top_p": 1.0,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 2.0,
+          "repeat_penalty": 1.0
+        },
+        "vision_nonthinking": {
+          "temperature": 0.7,
+          "top_p": 0.8,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 1.5,
+          "repeat_penalty": 1.0
+        },
+        "thinking": {
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 1.5
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "chat_template_kwargs"
+      }
+    },
+    "minicpm-v-4.7-1b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/openbmb/MiniCPM-V-4.7-1B",
+      "revision": "ad9bf379feb71204c888b22923d63322452407f9",
+      "checked_at": "2026-11-05",
+      "default_mode": "instruct",
+      "modes": {
+        "instruct": {
+          "temperature": 0.7,
+          "top_p": 0.95,
+          "top_k": 100,
+          "min_p": 0.0,
+          "presence_penalty": 0.0,
+          "repeat_penalty": 1.03
+        }
+      },
+      "reasoning": {
+        "on_by_default": true,
+        "control": "chat_template_kwargs"
+      }
+    },
+    "ministral-3-3b": {
+      "status": "partial",
+      "source_url": "https://huggingface.co/mistralai/Ministral-3-3B-Instruct-2512",
+      "revision": "",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 0.1,
+          "top_p": 1.0,
+          "top_k": 0,
+          "min_p": 0.0,
+          "repeat_penalty": 1.0
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "none"
+      },
+      "notes": "Reviewed 2026-11-05: card prose says start with temperature 0.1 (code samples use 0.15). Other fields unspecified -> neutral."
+    },
+    "lfm3-omni-2b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM3-Omni-2B",
+      "revision": "21d75123f86c1f7ffb4bef1ea202710c4e7ebe67",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 0.0,
+          "top_p": 1.0,
+          "top_k": 0,
+          "min_p": 0.0,
+          "repeat_penalty": 1.0
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "none"
+      },
+      "notes": "Card: text output -> greedy decoding works well (audio_temperature 0.4 / audio_repetition_penalty 1.2 apply to speech output only). Non-reasoning model."
+    },
+    "qwen3.5-2b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/Qwen/Qwen3.5-2B",
+      "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+      "checked_at": "2026-11-05",
+      "default_mode": "text_nonthinking",
+      "modes": {
+        "text_nonthinking": {
+          "temperature": 1.0,
+          "top_p": 1.0,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 2.0,
+          "repeat_penalty": 1.0
+        },
+        "vision_nonthinking": {
+          "temperature": 0.7,
+          "top_p": 0.8,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 1.5,
+          "repeat_penalty": 1.0
+        },
+        "thinking": {
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "top_k": 20,
+          "min_p": 0.0,
+          "presence_penalty": 1.5
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "chat_template_kwargs"
+      },
+      "notes": "Same best-practice blocks as Qwen3.5-0.8B."
+    },
+    "lfm2.5-vl-1.6b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/LiquidAI/LFM2.5-VL-1.6B",
+      "revision": "919fde3d022e3f90a4716006f993938ee8c2eb97",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 0.1,
+          "min_p": 0.15,
+          "repeat_penalty": 1.05
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "none"
+      },
+      "notes": "Card: text temperature=0.1, min_p=0.15, repetition_penalty=1.05; vision min/max image tokens 64/256."
+    },
+    "gemma-4-e2b": {
+      "status": "verified",
+      "source_url": "https://huggingface.co/google/gemma-4-E2B-it",
+      "revision": "4adf15748de9e1a0097b6274cee9c15836c41c37",
+      "checked_at": "2026-11-05",
+      "default_mode": "default",
+      "modes": {
+        "default": {
+          "temperature": 1.0,
+          "top_p": 0.95,
+          "top_k": 64
+        }
+      },
+      "reasoning": {
+        "on_by_default": false,
+        "control": "chat_template_kwargs"
+      },
+      "notes": "Card best practices: temperature=1.0, top_p=0.95, top_k=64 for all use cases."
+    }
+  }
+}

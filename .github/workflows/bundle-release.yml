@@ -1,0 +1,66 @@
+# DR-001 + DR-002: build the Debian-11 llama.cpp runtime, fetch the pinned GGUFs, publish the
+# frozen bundle as a GitHub (pre)release. The app only ever downloads these release assets.
+#
+# Triggers: manual dispatch, or a push that changes bundle/release-request.json (so a bundle
+# can be cut from a feature branch before merge). The published manifest.json is then copied
+# into bundle/manifest.json by a normal commit (tools/release.py prints every hash).
+name: bundle-release
+on:
+  workflow_dispatch:
+  push:
+    paths: ["bundle/release-request.json"]
+permissions:
+  contents: write
+concurrency:
+  group: bundle-release
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Read release request
+        id: req
+        run: |
+          python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json; r = json.load(open("bundle/release-request.json"))
+          print(f"bundle_id={r['bundle_id']}"); print(f"llama_tag={r['llama_tag']}")
+          print("presets=" + " ".join(r["generators"])); print("candidates=" + " ".join(r["candidates"]))
+          print(f"prerelease={'true' if r.get('prerelease', True) else 'false'}")
+          PY
+      - name: Install dev tools
+        run: pip install -r requirements.txt -r requirements-dev.txt
+      - name: Toolchain image (Debian 11 + clang 18)
+        run: docker build -f docker/Dockerfile.build -t mmrag-llama-build:bullseye docker/
+      - name: Build llama.cpp (I-BUILD-glibc enforced)
+        run: python -m tools.llama.build_llama --tag "${{ steps.req.outputs.llama_tag }}" --src build/llama.cpp --out build/llama --jobs "$(nproc)"
+      - name: Fetch pinned models (SHA-256 verified)
+        env:
+          HF_HUB_DISABLE_PROGRESS_BARS: "1"
+        run: python -m tools.fetch_models --only ${{ steps.req.outputs.candidates }}
+      - name: Smoke test in python:3.11-slim-bullseye with the 2.7 GB / 2 CPU cap (I-BUILD-smoke)
+        run: |
+          python -m tools.llama.write_smoke_presets --out build/smoke/presets.ini --generator "${{ steps.req.outputs.presets }}"
+          docker run --rm --memory=2700m --memory-swap=2700m --cpus=2 \
+            -v "$PWD/build/llama/pkg:/rt:ro" -v "$HOME/.cache/mmrag/models:/models:ro" -v "$PWD/build/smoke:/work" -v "$PWD/tools/llama:/tools:ro" \
+            python:3.11-slim-bullseye python3 /tools/smoke_tests.py --server /rt/llama-server --presets /work/presets.ini --out /work/smoke.json \
+            --generator "$(echo ${{ steps.req.outputs.presets }} | cut -d' ' -f1)"
+      - name: Assemble bundle
+        run: python -m tools.release --bundle-id "${{ steps.req.outputs.bundle_id }}" --runtime-dir build/llama/pkg --out dist/bundle --presets ${{ steps.req.outputs.presets }}
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/llama/pkg/build-info.json build/smoke/smoke.json dist/bundle/
+          flag=""; [ "${{ steps.req.outputs.prerelease }}" = "true" ] && flag="--prerelease"
+          gh release create "${{ steps.req.outputs.bundle_id }}" dist/bundle/* $flag --target "$GITHUB_SHA" \
+            --title "Frozen bundle ${{ steps.req.outputs.bundle_id }}" \
+            --notes "llama.cpp ${{ steps.req.outputs.llama_tag }} built on Debian 11 (glibc <= 2.31) + pinned GGUFs. See manifest.json, build-info.json, smoke.json."
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manifest
+          path: dist/bundle/manifest.json

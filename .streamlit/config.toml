@@ -1,0 +1,27 @@
+# Theme tokens are specified in docs/UX_SPEC.md (section "Theme tokens").
+# Keep this file and that table in sync (update docs when this file changes).
+
+[theme]
+base = "dark"
+primaryColor = "#4FD1C5"            # accent: buttons, sliders, active nav item
+backgroundColor = "#0F1419"         # page background
+secondaryBackgroundColor = "#1A222C" # sidebar, cards, inputs
+textColor = "#E8EEF4"
+font = "sans serif"
+
+[server]
+headless = true
+maxUploadSize = 50                  # MB per file (FR-010). Total per-session cap is enforced in code.
+enableXsrfProtection = true         # leave ON (devcontainer example turned it off for Codespaces only)
+enableCORS = true
+fileWatcherType = "none"            # no source watcher on the deployed app: saves CPU/RAM
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = "type"           # do not show stack traces to testers; details go to the Logs page
+
+[logger]
+level = "info"

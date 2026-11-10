@@ -1,16 +1,16 @@
 # =============================================================================
 # RUNTIME dependencies only (this is what Streamlit Community Cloud installs).
-# Every version is pinned. Streamlit MUST stay pinned: otherwise the platform
-# can pick a newer release without warning and break pages.
+# Every version is pinned; the full transitive set is locked in constraints.txt.
+# Streamlit MUST stay pinned: otherwise the platform can pick a newer release
+# without warning and break pages.
 #
-# Baseline pins: task S00 re-resolves them on python:3.11-slim-bullseye
-# (Debian 11, glibc 2.31) with `pip install --dry-run -r requirements.txt`,
-# fixes anything that does not resolve, and records the result in
-# docs/ARCHITECTURE.md (section "Pinned tech stack").
+# Verified on Python 3.11 (python:3.11-slim-bullseye, Debian 11, glibc 2.31):
+# every pin installs from wheels (turbovec ships manylinux_2_28 wheels).
 # Dev-only tooling lives in requirements-dev.txt and is NEVER deployed.
 # =============================================================================
+-c constraints.txt
 
-streamlit==1.66.0            # latest at time of writing (Nov 2026); chat_input accept_file/accept_audio, AppTest, st.navigation
+streamlit==1.66.0            # chat_input accept_file/accept_audio, AppTest, st.navigation, fragments
 
 # --- numerics / media -------------------------------------------------------
 numpy==2.2.6                 # PCA via SVD, Matryoshka truncation, vector ops
@@ -18,9 +18,9 @@ pillow==11.3.0               # image decode/downscale (MAX_IMAGE_PIXELS guard)
 imageio-ffmpeg==0.6.0        # bundled static ffmpeg binary: audio resample + video frame sampling (no apt needed)
 
 # --- vector index -----------------------------------------------------------
-turbovec==0.7.0              # 2/4-bit vector index; wrapped behind core.index.VectorStore (see ADR-005)
+turbovec==1.1.2              # 2/4-bit TurboQuant index; wrapped behind core.index.VectorStore
 
 # --- app plumbing -----------------------------------------------------------
-httpx==0.28.1                # thin OpenAI-compatible client (local llama-server + optional Gemini); ADR-007
-pydantic==2.11.7             # schema validation: bundle manifest, presets, export/import manifests
-psutil==7.0.0                # RSS / process-tree telemetry (FR-004)
+httpx==0.28.1                # thin OpenAI-compatible client (local llama-server + optional Gemini)
+pydantic==2.11.7             # schema validation: bundle manifest, presets, exports
+psutil==7.0.0                # RSS / process-tree telemetry

@@ -1,8 +1,8 @@
 # =============================================================================
 # DEVELOPMENT-PHASE tooling only. Never installed on Streamlit Cloud.
-# Install with:  pip install -r requirements.txt -r requirements-dev.txt
-# Baseline pins; S00 verifies they resolve on Python 3.11 and updates them.
+# Install with:  make setup   (pip install -r requirements.txt -r requirements-dev.txt)
 # =============================================================================
+-c constraints.txt
 
 # --- quality gates ----------------------------------------------------------
 pytest==8.4.1
@@ -16,8 +16,4 @@ pip-audit==2.9.0
 huggingface_hub==0.34.4      # model download; reads HF_TOKEN (read-only token) from the environment
 pyyaml==6.0.2                # eval matrices / candidate lists
 matplotlib==3.10.3           # synthetic chart images for the dataset generator
-soundfile==0.13.1            # writing synthetic audio (wav/flac)
-
-# Offline TTS for synthetic speech clips is chosen by the agent in task S04
-# (must run offline, permissive license, installable on Debian 11). Record the
-# choice as an ADR in docs/ARCHITECTURE.md before adding it here.
+soundfile==0.13.1            # writing synthetic audio (wav)
