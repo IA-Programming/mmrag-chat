@@ -141,9 +141,34 @@ class BundleManager:
         try:
             info = json.loads(m.read_text())
             st = p.stat()
-            return bool(info["sha256"] == asset.sha256 and info["size"] == st.st_size == asset.size_bytes and info["mtime_ns"] == st.st_mtime_ns)
+            # I-BUNDLE-fingerprint: a cheap SHA-256 of first 4 KiB + last 4 KiB + size, written by
+            # _verify alongside the manifest sha256. Catches in-place corruption (same size,
+            # different bytes) that the marker-vs-manifest sha256 + mtime_ns check would miss on
+            # filesystems with coarse mtime granularity (tmpfs, overlayfs, snapshot-restore).
+            return bool(
+                info["sha256"] == asset.sha256
+                and info["size"] == st.st_size == asset.size_bytes
+                and info["mtime_ns"] == st.st_mtime_ns
+                and info.get("fingerprint") == self._fingerprint(asset)
+            )
         except (OSError, ValueError, KeyError):
             return False
+
+    def _fingerprint(self, asset: BundleAsset) -> str:
+        """Cheap content fingerprint (8 KiB head+tail + size), stable across in-place rewrites."""
+        p = self.asset_path(asset.name)
+        h = hashlib.sha256()
+        with p.open("rb") as fh:
+            head = fh.read(4096)
+            h.update(head)
+            try:
+                fh.seek(-4096, 2)
+                tail = fh.read(4096)
+                h.update(tail)
+            except OSError:
+                pass  # file smaller than 8 KiB; head is enough
+        h.update(str(p.stat().st_size).encode())
+        return h.hexdigest()
 
     def all_cached(self) -> bool:
         return all(self.is_cached(a) for a in self.manifest.assets) and self._runtime_extracted()
@@ -282,7 +307,16 @@ class BundleManager:
         if h.hexdigest() != asset.sha256:
             raise BundleError("Checksum mismatch.", detail=f"{asset.name}: got {h.hexdigest()[:16]} expected {asset.sha256[:16]}")
         st = p.stat()
-        self._marker(asset).write_text(json.dumps({"sha256": asset.sha256, "size": st.st_size, "mtime_ns": st.st_mtime_ns}))
+        self._marker(asset).write_text(
+            json.dumps(
+                {
+                    "sha256": asset.sha256,
+                    "size": st.st_size,
+                    "mtime_ns": st.st_mtime_ns,
+                    "fingerprint": self._fingerprint(asset),
+                }
+            )
+        )
         self._set(asset.name, state="ready", done_bytes=asset.size_bytes)
 
     def _extract_runtime(self, asset: BundleAsset) -> None:
